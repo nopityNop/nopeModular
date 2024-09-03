@@ -80,7 +80,6 @@ func TestClearSession(t *testing.T) {
 func TestAuthMiddleware(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
-	// Setup a router with the AuthMiddleware
 	router := gin.Default()
 	router.Use(SessionMiddleware())
 
@@ -92,7 +91,6 @@ func TestAuthMiddleware(t *testing.T) {
 		})
 	}
 
-	// Test case 1: Access without session (should fail)
 	t.Run("Unauthorized Access", func(t *testing.T) {
 		w := httptest.NewRecorder()
 		req := httptest.NewRequest("GET", "/dashboard", nil)
@@ -106,12 +104,10 @@ func TestAuthMiddleware(t *testing.T) {
 		assert.Equal(t, "Unauthorized", response["error"])
 	})
 
-	// Test case 2: Access with valid session (should succeed)
 	t.Run("Authorized Access", func(t *testing.T) {
 		w := httptest.NewRecorder()
 		req := httptest.NewRequest("GET", "/dashboard", nil)
 
-		// Simulate a logged-in user by setting a valid session
 		session := sessions.NewSession(sessionStore, "session-name")
 		session.Values["user_id"] = 1
 		session.Save(req, w)

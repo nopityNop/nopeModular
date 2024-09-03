@@ -12,7 +12,6 @@ import (
 )
 
 func LoginUser(w http.ResponseWriter, r *http.Request, db *sql.DB, username, password string) (int, error) {
-	// Fetch the user by username
 	user, err := GetUserByUsername(db, username)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -22,15 +21,11 @@ func LoginUser(w http.ResponseWriter, r *http.Request, db *sql.DB, username, pas
 		return 0, err
 	}
 
-	fmt.Printf("Retrieved user: %v\n", user) // Debug output
-
-	// Check if the password is correct
 	if !CheckPasswordHash(password, user.PasswordHash) {
 		fmt.Println("Password mismatch")
 		return 0, errors.New("invalid username or password")
 	}
 
-	// Set the session with the user ID
 	err = SetSession(w, r, "user_id", user.ID)
 	if err != nil {
 		return 0, err
@@ -60,24 +55,20 @@ func LoginHandler(c *gin.Context, dbFunc func() (*sql.DB, error)) {
 		return
 	}
 
-	// Set a custom header to indicate a redirect
 	c.Header("HX-Redirect", "/dashboard")
 	c.Status(http.StatusOK)
 }
 
 func LogoutHandler(c *gin.Context) {
-	// Retrieve the session
 	session := c.MustGet("session").(*sessions.Session)
 
-	// Clear the session
-	session.Options.MaxAge = -1 // This deletes the session cookie
+	session.Options.MaxAge = -1
 	err := session.Save(c.Request, c.Writer)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to clear session"})
 		return
 	}
 
-	// Render the logout.html template
 	c.HTML(http.StatusOK, "logout.html", nil)
 }
 

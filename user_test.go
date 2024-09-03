@@ -159,11 +159,9 @@ func TestLogoutHandler(t *testing.T) {
 func TestLoginHandler(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
-	// Setup a shared database connection for the test
 	db := openTestDB(t)
 	defer db.Close()
 
-	// Create a mock user for testing purposes
 	username := "testuser"
 	password := "ValidP@ssw0rd"
 
@@ -173,16 +171,14 @@ func TestLoginHandler(t *testing.T) {
 	}
 	t.Logf("Created user with ID: 1")
 
-	// Define a function that returns the shared DB connection
 	dbFunc := func() (*sql.DB, error) {
 		return db, nil
 	}
 
-	// Test Case 1: Successful login
 	t.Run("Successful Login", func(t *testing.T) {
-		router := gin.Default() // Create a new router for each test case
+		router := gin.Default()
 		router.POST("/login", func(c *gin.Context) {
-			LoginHandler(c, dbFunc) // Use the shared DB connection
+			LoginHandler(c, dbFunc)
 		})
 
 		w := httptest.NewRecorder()
@@ -194,7 +190,6 @@ func TestLoginHandler(t *testing.T) {
 
 		router.ServeHTTP(w, req)
 
-		// Debugging output
 		if w.Code != http.StatusOK {
 			t.Logf("Received status: %d, Body: %s", w.Code, w.Body.String())
 		}
@@ -208,11 +203,10 @@ func TestLoginHandler(t *testing.T) {
 		assert.NotNil(t, response["user_id"])
 	})
 
-	// Test Case 2: Invalid login credentials
 	t.Run("Invalid Credentials", func(t *testing.T) {
-		router := gin.Default() // Create a new router for each test case
+		router := gin.Default()
 		router.POST("/login", func(c *gin.Context) {
-			LoginHandler(c, dbFunc) // Use the shared DB connection
+			LoginHandler(c, dbFunc)
 		})
 
 		w := httptest.NewRecorder()
@@ -232,14 +226,12 @@ func TestLoginHandler(t *testing.T) {
 		assert.Equal(t, "Invalid username or password", response["error"])
 	})
 
-	// Test Case 3: Database connection failure
 	t.Run("Database Connection Failure", func(t *testing.T) {
-		// Define a mock function that simulates a database connection failure
 		mockDBFunc := func() (*sql.DB, error) {
 			return nil, errors.New("simulated connection failure")
 		}
 
-		router := gin.Default() // Create a new router for each test case
+		router := gin.Default()
 		router.POST("/login", func(c *gin.Context) {
 			LoginHandler(c, mockDBFunc)
 		})
@@ -265,7 +257,6 @@ func TestLoginHandler(t *testing.T) {
 func TestDashboardHandler(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
-	// Setup a router with the AuthMiddleware and DashboardHandler
 	router := gin.Default()
 	router.Use(SessionMiddleware())
 
@@ -275,12 +266,10 @@ func TestDashboardHandler(t *testing.T) {
 		protected.GET("/dashboard", DashboardHandler)
 	}
 
-	// Test case: Access with valid session (should succeed)
 	t.Run("Authorized Access", func(t *testing.T) {
 		w := httptest.NewRecorder()
 		req := httptest.NewRequest("GET", "/dashboard", nil)
 
-		// Simulate a logged-in user by setting a valid session
 		session := sessions.NewSession(sessionStore, "session-name")
 		session.Values["user_id"] = 1
 		session.Save(req, w)
@@ -296,7 +285,6 @@ func TestDashboardHandler(t *testing.T) {
 		assert.Equal(t, 1, int(response["user_id"].(float64)))
 	})
 
-	// Test case: Access without session (should fail)
 	t.Run("Unauthorized Access", func(t *testing.T) {
 		w := httptest.NewRecorder()
 		req := httptest.NewRequest("GET", "/dashboard", nil)

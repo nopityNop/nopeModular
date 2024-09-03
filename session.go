@@ -112,8 +112,6 @@ func AuthMiddleware() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-
-		// User is authenticated, continue to the next handler
 		c.Next()
 	}
 }
