@@ -1,0 +1,67 @@
+.back-button {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+}
+.back-button a {
+    padding: 7.5px 15px;
+    color: white;
+    text-decoration: none;
+    border: 1px solid white;
+    border-radius: 5px;
+    transition: background-color 0.3s, color 0.3s;
+}
+.back-button a:hover {
+    background-color: white;
+    color: black;
+}
+body {
+    margin: 0;
+    background-color: black;
+    font-family: 'Courier New', Courier, monospace;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+.login-container {
+    text-align: center;
+    border: 1px solid white;
+    padding: 30px;
+    border-radius: 10px;
+}
+.login-container button {
+    margin-top: 10px;
+    padding: 7.5px 15px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 16px;
+    background-color: black;
+    color: white;
+    text-decoration: none;
+    border: 1px solid white;
+    border-radius: 5px;
+    transition: background-color 0.3s, color 0.3s;
+    cursor: pointer;
+}
+.login-container button:hover {
+    background-color: white;
+    color: black;
+}
+.login-container h1 {
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+.login-container input {
+    width: 90%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid white;
+    border-radius: 5px;
+    background-color: black;
+    color: white;
+}
+.login-container input:focus {
+    outline: none;
+    border-color: gray;
+}

@@ -1,22 +1,21 @@
-<!-- templates/logout.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Logged Out</title>
-    <link rel="stylesheet" href="/static/css/styles.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+    <div class="hello-dashboard-container">
+        <h2>Log out successful</h2>
+        <p class="subtitle">Redirecting to login...</p>
+    </div>
     <script>
         // Redirect to login page after a few seconds
         setTimeout(function(){
             window.location.href = "/login";
         }, 3000); // Redirect after 3 seconds
     </script>
-</head>
-<body>
-    <div class="logout-container">
-        <h2>Log out successful</h2>
-        <p>Redirecting to login...</p>
-    </div>
 </body>
 </html>

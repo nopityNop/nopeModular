@@ -1,17 +1,27 @@
-<!-- templates/dashboard.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
-    <link rel="stylesheet" href="/static/css/styles.css">
+    <title>Dashboard - nope.tools</title>
+    <link rel="stylesheet" href="static/css/dashboard.css">
+    <script src="https://unpkg.com/htmx.org"></script>
 </head>
 <body>
-    <div class="dashboard-container">
-        <h1>Dashboard</h1>
-        <p>Welcome, User {{.UserID}}!</p>
-        <a href="/logout">Logout</a>
+    <div class="account-button-container">
+        <button class="account-button" id="accountButton">.account</button>
+        <div class="account-button-menu" id="account-button-menu">
+            <a href="dashboard">.dashboard</a>
+            <a href="/logout" hx-get="/logout" hx-target="body" hx-swap="outerHTML">.log-out</a>
+        </div>
     </div>
+    <div class="hello-dashboard-container">
+        <h1 class="title">Dashboard<span class="cursor"></span></h1>
+        <p class="subtitle">Welcome to your dashboard!</p>
+    </div>
+    <div class="content-dashboard-container">
+        <!-- Account Information section omitted as requested -->
+    </div>
+    <script src="static/javascript/menu.js"></script>
 </body>
 </html>

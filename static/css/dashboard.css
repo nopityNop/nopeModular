@@ -1,0 +1,158 @@
+.account-button {
+    padding: 7.5px 15px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 16px;
+    background-color: black;
+    color: white;
+    text-decoration: none;
+    border: 1px solid white;
+    border-radius: 5px;
+    transition: background-color 0.3s, color 0.3s;
+    cursor: pointer;
+}
+.account-button-edit-button {
+    padding: 7.5px 15px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 14px;
+    background-color: black;
+    color: white;
+    text-decoration: none;
+    border: 1px solid white;
+    border-radius: 5px;
+    transition: background-color 0.3s, color 0.3s;
+    cursor: pointer;
+}
+.account-button-edit-button:hover {
+    background-color: white;
+    color: black;
+}
+.account-button-container {
+    position: absolute;
+    font-size: 16px;
+    top: 12px;
+    left: 20px;
+}
+.account-button-menu {
+    display: none;
+    position: absolute;
+    top: 40px;
+    left: 0px;
+    background-color: black;
+    border: 1px solid white;
+    border-radius: 5px;
+    text-align: left;
+}
+.account-button-menu a {
+    display: block;
+    padding: 10px;
+    color: white;
+    text-decoration: none;
+    border-bottom: 1px solid white;
+}
+.account-button-menu a:hover {
+    background-color: white;
+    color: black;
+}
+.account-button-menu a:last-child {
+    border-bottom: none;
+}
+.account-form-container {
+    border: 1px solid white;
+    padding: 20px;
+    border-radius: 10px;
+    width: 100%;
+    max-width: 500px;
+    text-align: left;
+    box-sizing: border-box;
+}
+.account-form-container h2 {
+    margin-top: 0;
+    font-weight: normal;
+    text-align: center; 
+}
+.account-form-container input {
+    padding: 7.5px;
+    border: 1px solid white;
+    border-radius: 5px;
+    background-color: black;
+    color: white;
+    flex-grow: 1;
+    margin-right: 10px;
+}
+.account-form-container input:focus {
+    outline: none;
+    border-color: gray;
+}
+body {
+    margin: 0;
+    background-color: black;
+    font-family: 'Courier New', Courier, monospace;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    overflow: hidden; 
+}
+.content-dashboard-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    box-sizing: border-box;
+}
+.cursor {
+    margin-left: 10px;
+    display: inline-block;
+    width: 15px;
+    height: .65em;
+    background-color: white;
+    animation: blink 1.5s step-start 0s infinite;
+    vertical-align: baseline;
+}
+.form-row {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    width: 100%;
+}
+.input-group {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding-left: 5px;
+    margin-bottom: 10px;
+}
+.hidden {
+    display: none;
+}
+.hello-dashboard-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+.hello-dashboard-container .subtitle {
+    margin-top: 5px;
+    font-size: 16px;
+    color: #aaa;
+}
+.hello-dashboard-container .title {
+    font-size: 48px;
+    margin: 0;
+    padding-left: 15px;
+    font-weight: normal;
+}
+@keyframes blink {
+    0%, 50% {
+        opacity: 1;
+    }
+    50.01%, 100% {
+        opacity: 0;
+    }
+}
