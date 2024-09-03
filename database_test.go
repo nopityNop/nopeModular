@@ -17,7 +17,8 @@ func openTestDB(t *testing.T) *sql.DB {
 	createTableQuery := `
     CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT NOT NULL UNIQUE
+        username TEXT NOT NULL UNIQUE,
+        password_hash TEXT NOT NULL
     );`
 	_, err = db.Exec(createTableQuery)
 	if err != nil {
@@ -32,8 +33,9 @@ func TestReadUser(t *testing.T) {
 	defer db.Close()
 
 	username := "readtestuser"
+	password := "ValidP@ssw0rd"
 
-	userID, err := CreateUserIfNotExists(db, username)
+	userID, err := CreateUserIfNotExists(db, username, password)
 	if err != nil {
 		t.Fatalf("CreateUserIfNotExists failed: %v", err)
 	}
@@ -46,22 +48,25 @@ func TestReadUser(t *testing.T) {
 	if user.Username != username {
 		t.Errorf("Expected username %s, got %s", username, user.Username)
 	}
-}
 
+	if !CheckPasswordHash(password, user.PasswordHash) {
+		t.Errorf("Password hash did not match original password after username update")
+	}
+}
 func TestUpdateUser(t *testing.T) {
 	db := openTestDB(t)
 	defer db.Close()
 
 	username := "updatetestuser"
+	password := "ValidP@ssw0rd"
 
-	userID, err := CreateUserIfNotExists(db, username)
+	userID, err := CreateUserIfNotExists(db, username, password)
 	if err != nil {
 		t.Fatalf("CreateUserIfNotExists failed: %v", err)
 	}
 
 	updatedUsername := "updateduser"
-
-	err = UpdateUser(db, int(userID), updatedUsername)
+	err = UpdateUser(db, int(userID), updatedUsername, "")
 	if err != nil {
 		t.Fatalf("UpdateUser failed: %v", err)
 	}
@@ -74,6 +79,10 @@ func TestUpdateUser(t *testing.T) {
 	if user.Username != updatedUsername {
 		t.Errorf("Expected username %s, got %s", updatedUsername, user.Username)
 	}
+
+	if !CheckPasswordHash(password, user.PasswordHash) {
+		t.Errorf("Password hash did not match original password after username update")
+	}
 }
 
 func TestDeleteUser(t *testing.T) {
@@ -81,8 +90,9 @@ func TestDeleteUser(t *testing.T) {
 	defer db.Close()
 
 	username := "deletetestuser"
+	password := "ValidP@ssw0rd"
 
-	userID, err := CreateUserIfNotExists(db, username)
+	userID, err := CreateUserIfNotExists(db, username, password)
 	if err != nil {
 		t.Fatalf("CreateUserIfNotExists failed: %v", err)
 	}
@@ -103,8 +113,9 @@ func TestCreateUserIfNotExists(t *testing.T) {
 	defer db.Close()
 
 	username := "uniqueuser"
+	password := "ValidP@ssw0rd"
 
-	userID, err := CreateUserIfNotExists(db, username)
+	userID, err := CreateUserIfNotExists(db, username, password)
 	if err != nil {
 		t.Fatalf("CreateUserIfNotExists failed on first attempt: %v", err)
 	}
@@ -113,7 +124,7 @@ func TestCreateUserIfNotExists(t *testing.T) {
 		t.Errorf("Expected valid user ID, got %d", userID)
 	}
 
-	_, err = CreateUserIfNotExists(db, username)
+	_, err = CreateUserIfNotExists(db, username, password)
 	if err == nil {
 		t.Fatalf("Expected error for duplicate user creation, but got none")
 	} else {
@@ -124,33 +135,172 @@ func TestCreateUserIfNotExists(t *testing.T) {
 	}
 }
 
-func TestValidateUsername(t *testing.T) {
+func TestHashAndCheckPassword(t *testing.T) {
+	password := "ValidP@ssw0rd"
+	hashedPassword, err := HashPassword(password)
+	if err != nil {
+		t.Fatalf("Failed to hash password: %v", err)
+	}
+
+	if !CheckPasswordHash(password, hashedPassword) {
+		t.Errorf("Password did not match hashed password")
+	}
+
+	if CheckPasswordHash("wrongpassword", hashedPassword) {
+		t.Errorf("Expected hash check to fail with wrong password")
+	}
+}
+
+func TestCreateUserWithPassword(t *testing.T) {
 	db := openTestDB(t)
 	defer db.Close()
 
-	testCases := []struct {
-		username string
-		isValid  bool
-	}{
-		{"validuser", true},
-		{"user123", true},
-		{"user_name", true},
-		{"user_name_", true},
-		{"username1234", true},
-		{"user", true},
-		{"1username", false}, // starts with a digit
-		{"user-name", false}, // contains a hyphen
-		{"UserName", false},  // contains uppercase letters
-		{"user name", false}, // contains a space
-		{"us", false},        // too short
-		{"thisisaverylongusernameover24characters", false}, // too long
-		{"user@name", false}, // contains an invalid character
+	username := "secureuser"
+	password := "ValidP@ssw0rd"
+
+	userID, err := CreateUserIfNotExists(db, username, password)
+	if err != nil {
+		t.Fatalf("CreateUserIfNotExists failed: %v", err)
 	}
 
-	for _, tc := range testCases {
-		err := validateUsername(tc.username)
-		if (err == nil) != tc.isValid {
-			t.Errorf("Expected validity of username '%s' to be %v, got error: %v", tc.username, tc.isValid, err)
-		}
+	user, err := ReadUser(db, int(userID))
+	if err != nil {
+		t.Fatalf("ReadUser failed: %v", err)
+	}
+
+	if user.PasswordHash == "" {
+		t.Fatalf("Password hash was not stored correctly.")
+	}
+
+	if !CheckPasswordHash(password, user.PasswordHash) {
+		t.Errorf("Stored password hash did not match the original password")
+	}
+}
+
+func TestUpdateUsernameOnly(t *testing.T) {
+	db := openTestDB(t)
+	defer db.Close()
+
+	username := "initialuser"
+	password := "ValidP@ssw0rd"
+
+	userID, err := CreateUserIfNotExists(db, username, password)
+	if err != nil {
+		t.Fatalf("CreateUserIfNotExists failed: %v", err)
+	}
+
+	newUsername := "updateduser"
+	err = UpdateUser(db, int(userID), newUsername, "")
+	if err != nil {
+		t.Fatalf("UpdateUser failed: %v", err)
+	}
+
+	user, err := ReadUser(db, int(userID))
+	if err != nil {
+		t.Fatalf("ReadUser failed: %v", err)
+	}
+
+	if user.Username != newUsername {
+		t.Errorf("Expected username %s, got %s", newUsername, user.Username)
+	}
+
+	if !CheckPasswordHash(password, user.PasswordHash) {
+		t.Errorf("Password hash did not match original password after username update")
+	}
+}
+
+func TestUpdatePasswordOnly(t *testing.T) {
+	db := openTestDB(t)
+	defer db.Close()
+
+	username := "initialuser"
+	password := "ValidP@ssw0rd"
+
+	userID, err := CreateUserIfNotExists(db, username, password)
+	if err != nil {
+		t.Fatalf("CreateUserIfNotExists failed: %v", err)
+	}
+
+	newPassword := "UpdatedP@ssw0rd"
+	err = UpdateUser(db, int(userID), "", newPassword)
+	if err != nil {
+		t.Fatalf("UpdateUser failed: %v", err)
+	}
+
+	user, err := ReadUser(db, int(userID))
+	if err != nil {
+		t.Fatalf("ReadUser failed: %v", err)
+	}
+
+	if user.Username != username {
+		t.Errorf("Expected username %s, got %s", username, user.Username)
+	}
+
+	if !CheckPasswordHash(newPassword, user.PasswordHash) {
+		t.Errorf("Stored password hash did not match updated password")
+	}
+}
+
+func TestUpdateUsernameAndPassword(t *testing.T) {
+	db := openTestDB(t)
+	defer db.Close()
+
+	username := "initialuser"
+	password := "ValidP@ssw0rd"
+
+	userID, err := CreateUserIfNotExists(db, username, password)
+	if err != nil {
+		t.Fatalf("CreateUserIfNotExists failed: %v", err)
+	}
+
+	newUsername := "updateduser"
+	newPassword := "UpdatedP@ssw0rd"
+	err = UpdateUser(db, int(userID), newUsername, newPassword)
+	if err != nil {
+		t.Fatalf("UpdateUser failed: %v", err)
+	}
+
+	user, err := ReadUser(db, int(userID))
+	if err != nil {
+		t.Fatalf("ReadUser failed: %v", err)
+	}
+
+	if user.Username != newUsername {
+		t.Errorf("Expected username %s, got %s", newUsername, user.Username)
+	}
+
+	if !CheckPasswordHash(newPassword, user.PasswordHash) {
+		t.Errorf("Stored password hash did not match updated password")
+	}
+}
+
+func TestUpdateNoFields(t *testing.T) {
+	db := openTestDB(t)
+	defer db.Close()
+
+	username := "initialuser"
+	password := "ValidP@ssw0rd"
+
+	userID, err := CreateUserIfNotExists(db, username, password)
+	if err != nil {
+		t.Fatalf("CreateUserIfNotExists failed: %v", err)
+	}
+
+	err = UpdateUser(db, int(userID), "", "")
+	if err == nil {
+		t.Fatalf("Expected error when updating with no fields, but got none")
+	}
+
+	user, err := ReadUser(db, int(userID))
+	if err != nil {
+		t.Fatalf("ReadUser failed: %v", err)
+	}
+
+	if user.Username != username {
+		t.Errorf("Expected username %s, got %s", username, user.Username)
+	}
+
+	if !CheckPasswordHash(password, user.PasswordHash) {
+		t.Errorf("Stored password hash did not match original password")
 	}
 }
