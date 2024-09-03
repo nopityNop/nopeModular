@@ -65,3 +65,11 @@ body {
     outline: none;
     border-color: gray;
 }
+
+/* Ensure this is in your login.css */
+#login-error {
+    color: red;
+    margin-bottom: 10px;
+    text-align: center;
+    border: none; /* Ensure no border is applied */
+}
