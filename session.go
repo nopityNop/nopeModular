@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/gin-gonic/gin"
 	"github.com/gorilla/sessions"
 	"gopkg.in/yaml.v2"
 )
@@ -67,19 +68,52 @@ func ClearSession(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	// Explicitly delete all session values
 	for key := range session.Values {
 		delete(session.Values, key)
 	}
 
-	// Invalidate the session cookie
 	session.Options.MaxAge = -1
 
-	// Save the session to apply the changes
 	err = session.Save(r, w)
 	if err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func SessionMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		session, err := sessionStore.Get(c.Request, "session-name")
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Failed to get session"})
+			return
+		}
+
+		c.Set("session", session)
+
+		c.Next()
+	}
+}
+
+func AuthMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// Attempt to retrieve the session
+		session, exists := c.Get("session")
+		if !exists {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized: Session not found"})
+			c.Abort()
+			return
+		}
+
+		userID, ok := session.(*sessions.Session).Values["user_id"]
+		if !ok || userID == nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized: User ID not found in session"})
+			c.Abort()
+			return
+		}
+
+		// User is authenticated, continue to the next handler
+		c.Next()
+	}
 }

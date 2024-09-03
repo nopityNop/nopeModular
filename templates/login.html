@@ -1,0 +1,28 @@
+<!-- templates/login.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <script src="https://unpkg.com/htmx.org"></script>
+</head>
+<body>
+    <div class="login-container">
+        <h2>Login</h2>
+        <form hx-post="/login" hx-target="#login-response" hx-swap="innerHTML">
+            <div>
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            <div>
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button type="submit">Login</button>
+        </form>
+        <div id="login-response"></div>
+    </div>
+</body>
+</html>

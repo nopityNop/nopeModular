@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"log"
 	"strings"
 
 	"golang.org/x/crypto/argon2"
@@ -94,6 +95,7 @@ func CreateUserIfNotExists(db *sql.DB, username, password string) (int64, error)
 	}
 
 	return CreateUser(db, username, password)
+
 }
 
 func ReadUser(db *sql.DB, id int) (*User, error) {
@@ -208,4 +210,26 @@ func GetUserByUsername(db *sql.DB, username string) (*User, error) {
 		return nil, err
 	}
 	return user, nil
+}
+
+func EnsureTestUser(db *sql.DB) error {
+	username := "test"
+	password := "Test@1234"
+
+	exists, err := UserExists(db, username)
+	if err != nil {
+		return err
+	}
+
+	if !exists {
+		_, err := CreateUser(db, username, password)
+		if err != nil {
+			return err
+		}
+		log.Printf("Created test user with username: %s", username)
+	} else {
+		log.Printf("Test user already exists: %s", username)
+	}
+
+	return nil
 }
